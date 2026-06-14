@@ -472,45 +472,51 @@ Objetivo: dashboard utilizável pelo gerente da NVIDIA para consultar, visualiza
 ├── README.md
 ├── pyproject.toml        # dependências e metadados do projeto (gerenciado pelo uv)
 ├── uv.lock               # lock file gerado automaticamente — commitar sempre
+├── .python-version       # versão do Python fixada (3.12)
 ├── docs/
 │   ├── architecture.md       # Detalhamento da arquitetura
 │   ├── agents.md             # Descrição detalhada de cada agente
 │   ├── rag.md                # Pipeline RAG documentada
 │   ├── scraping.md           # Estratégia e mapeamento de fontes
 │   └── decisions.md          # Log de decisões técnicas (ADR informal) — rubrica de classificação vai aqui
-├── agents/
-│   ├── search_planner.py
-│   ├── scraper.py
-│   ├── extractor.py
-│   ├── classifier.py
-│   ├── evidence_validator.py
-│   ├── nvidia_rag.py
-│   ├── recommender.py
-│   └── briefing.py
-├── graph/
-│   └── pipeline.py           # Grafo LangGraph principal
-├── rag/
-│   ├── ingestion.py
-│   ├── chunking.py
-│   ├── embeddings.py
-│   ├── retrieval.py
-│   └── reranker.py
-├── scraping/
-│   ├── scrapling_fetcher.py  # fetch + parsing + anti-bot (substitui playwright + bs4)
-│   ├── firecrawl_client.py   # extração de conteúdo limpo para RAG
-│   ├── trafilatura_parser.py # extração de texto principal de artigos
-│   ├── github_scraper.py
-│   ├── jobs_scraper.py
-│   └── podcast_transcript.py
-├── enrichment/
-│   ├── crunchbase_client.py
-│   └── dealroom_client.py
-├── db/
-│   ├── models.py             # Modelos PostgreSQL
-│   └── migrations/
-├── frontend/                 # A definir
+├── src/                          # código-fonte (src layout — pacotes instalados em modo editável via uv)
+│   ├── agents/
+│   │   ├── search_planner.py
+│   │   ├── scraper.py
+│   │   ├── extractor.py
+│   │   ├── classifier.py
+│   │   ├── evidence_validator.py
+│   │   ├── nvidia_rag.py
+│   │   ├── recommender.py
+│   │   └── briefing.py
+│   ├── graph/
+│   │   └── pipeline.py           # Grafo LangGraph principal
+│   ├── rag/
+│   │   ├── ingestion.py
+│   │   ├── chunking.py
+│   │   ├── embeddings.py
+│   │   ├── retrieval.py
+│   │   └── reranker.py
+│   ├── scraping/
+│   │   ├── scrapling_fetcher.py  # fetch + parsing + anti-bot (substitui playwright + bs4)
+│   │   ├── firecrawl_client.py   # extração de conteúdo limpo para RAG
+│   │   ├── trafilatura_parser.py # extração de texto principal de artigos
+│   │   ├── github_scraper.py
+│   │   ├── jobs_scraper.py
+│   │   └── podcast_transcript.py
+│   ├── enrichment/
+│   │   ├── crunchbase_client.py
+│   │   └── dealroom_client.py
+│   └── db/
+│       ├── models.py             # Modelos PostgreSQL
+│       └── migrations/
+├── frontend/                     # A definir
 └── tests/
 ```
+
+> **Nota sobre o `src/` layout:** os pacotes ficam em `src/` e são instalados em modo editável pelo `uv sync`.
+> O `pyproject.toml` declara `build-system = hatchling` e lista os pacotes em `[tool.hatch.build.targets.wheel]`,
+> o que torna `import agents`, `import graph`, etc. válidos em qualquer script (`uv run`) e nos testes — sem mexer em `PYTHONPATH`.
 
 ---
 
