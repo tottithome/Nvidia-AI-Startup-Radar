@@ -363,12 +363,12 @@ Implementar nesta ordem de blocos. Não avançar para o próximo enquanto o ante
 Objetivo: ambiente funcionando, sem nenhuma lógica de negócio ainda.
 
 **Mínimo funcional:**
-- [ ] Repositório criado com estrutura de pastas conforme seção "Estrutura de Diretórios"
-- [ ] `uv init` rodado, `pyproject.toml` criado com Python 3.12 fixado
-- [ ] `.env.example` documentado com todas as variáveis necessárias
-- [ ] Docker Compose com PostgreSQL e Qdrant rodando localmente
-- [ ] Dependências principais adicionadas via `uv add` (LangGraph, Scrapling, Firecrawl, trafilatura, Cohere, etc.)
-- [ ] Conexão com LLM provider (OpenRouter) validada com um teste simples via `uv run`
+- [x] Repositório criado com estrutura de pastas conforme seção "Estrutura de Diretórios"
+- [x] `uv init` rodado, `pyproject.toml` criado com Python 3.12 fixado
+- [x] `.env.example` documentado com todas as variáveis necessárias
+- [x] Docker Compose com PostgreSQL e Qdrant rodando localmente
+- [x] Dependências do Bloco 0 adicionadas via `uv add` (`openai` + `python-dotenv`, suficientes para o teste do OpenRouter). As demais libs (LangGraph, Scrapling, Firecrawl, trafilatura, Cohere) entram no bloco que as usa — mínimo funcional.
+- [x] Conexão com LLM provider (OpenRouter) validada com um teste simples via `uv run` (`scripts/check_openrouter.py`; modelo de teste: `nvidia/nemotron-nano-9b-v2:free`)
 
 ### Bloco 1 — Pipeline de scraping (Entregável 1)
 Objetivo: dado o nome de uma startup, coletar contexto público e salvar estruturado no banco.
@@ -510,6 +510,7 @@ Objetivo: dashboard utilizável pelo gerente da NVIDIA para consultar, visualiza
 │   └── db/
 │       ├── models.py             # Modelos PostgreSQL
 │       └── migrations/
+├── scripts/                      # scripts utilitários e de diagnóstico (ex.: check_openrouter.py)
 ├── frontend/                     # A definir
 └── tests/
 ```
@@ -583,3 +584,5 @@ Registrar em `docs/decisions.md` quando resolvidas.
 - [ ] **Formato do briefing executivo** — validar com o gerente de Startups & VCs se houver template preferido antes de implementar o Briefing Agent.
 - [ ] **Escopo do Entregável 6** — diferencial a definir com base em dores reais do parceiro. Atacar após os entregáveis 1–4 estarem funcionando.
 - [ ] **Ordem final de ingestão da base RAG NVIDIA** — recomendação atual: contextuais primeiro, depois docs oficiais por tecnologia.
+- [ ] **Modelo LLM de produção** — Bloco 0 validado com `nvidia/nemotron-nano-9b-v2:free` (grátis, porém instável: vimos rate-limit `429` e retorno vazio durante os testes). Antes do Bloco 3 (pipeline multi-agente, muitas chamadas), definir um modelo pago barato e confiável + crédito no OpenRouter.
+- [ ] **Provider de embeddings** — não definido. Necessário no Bloco 2 (RAG). Opções: OpenAI, Cohere, Gemini ou local (sentence-transformers). Placeholder comentado já existe no `.env.example`.
