@@ -374,9 +374,9 @@ Objetivo: ambiente funcionando, sem nenhuma lógica de negócio ainda.
 Objetivo: dado o nome de uma startup, coletar contexto público e salvar estruturado no banco.
 
 **Mínimo funcional — implementar e validar antes de qualquer enriquecimento:**
-- [ ] Scraper do site oficial + blog funcionando (Scrapling para fetch + parsing, trafilatura para limpeza do texto)
-- [ ] Dados salvos no PostgreSQL com campo de fonte rastreável
-- [ ] Teste: dado "Startup X", o sistema retorna texto limpo e estruturado do site
+- [x] Scraper do site oficial funcionando (Scrapling para fetch + parsing, trafilatura para limpeza do texto). O scraper é agnóstico à URL — a mesma função serve para o blog, basta apontar a URL.
+- [x] Dados salvos no PostgreSQL com campo de fonte rastreável (`source_url` + `source_type`)
+- [x] Teste: dado "Startup X", o sistema retorna texto limpo e estruturado do site (validado com Hand Talk via `scripts/collect_startup.py`)
 
 **Enriquecimento — só depois do mínimo validado:**
 - [ ] Scraper de página de carreiras (Scrapling)
@@ -508,7 +508,9 @@ Objetivo: dashboard utilizável pelo gerente da NVIDIA para consultar, visualiza
 │   │   ├── crunchbase_client.py
 │   │   └── dealroom_client.py
 │   └── db/
-│       ├── models.py             # Modelos PostgreSQL
+│       ├── models.py             # Modelos (tabelas) SQLAlchemy
+│       ├── session.py            # Conexão com o PostgreSQL (engine + sessões)
+│       ├── repository.py         # Funções de leitura/gravação no banco
 │       └── migrations/
 ├── scripts/                      # scripts utilitários e de diagnóstico (ex.: check_openrouter.py)
 ├── frontend/                     # A definir
