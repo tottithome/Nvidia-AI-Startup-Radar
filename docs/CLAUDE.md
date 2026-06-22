@@ -389,7 +389,7 @@ Objetivo: dado o nome de uma startup, coletar contexto público e salvar estrutu
 Objetivo: RAG funcional sobre tecnologias NVIDIA com qualidade de recuperação validada.
 
 **Mínimo funcional — implementar e validar antes de ingerir tudo:**
-- [ ] Estudo dos materiais contextuais (Sequoia, Emergence, NVIDIA blog) antes de qualquer código
+- [x] Estudo dos materiais contextuais (Sequoia, Emergence, NVIDIA blog) antes de qualquer código — resumido em `docs/referencias/estudo-materiais-textuais.md` e `estudo-videos.md`
 - [ ] Pipeline RAG básica funcionando: ingestão → chunking → embeddings → Qdrant → recuperação
 - [ ] Ingestão de 2–3 tecnologias NVIDIA (ex: NIM, NeMo, Inception)
 - [ ] Teste: pergunta sobre NIM retorna resposta relevante com citação de fonte
@@ -473,12 +473,12 @@ Objetivo: dashboard utilizável pelo gerente da NVIDIA para consultar, visualiza
 ├── pyproject.toml        # dependências e metadados do projeto (gerenciado pelo uv)
 ├── uv.lock               # lock file gerado automaticamente — commitar sempre
 ├── .python-version       # versão do Python fixada (3.12)
-├── docs/
-│   ├── architecture.md       # Detalhamento da arquitetura
-│   ├── agents.md             # Descrição detalhada de cada agente
-│   ├── rag.md                # Pipeline RAG documentada
-│   ├── scraping.md           # Estratégia e mapeamento de fontes
-│   └── decisions.md          # Log de decisões técnicas (ADR informal) — rubrica de classificação vai aqui
+├── docs/                     # CLAUDE.md (este guia) + materiais de referência
+│   └── referencias/          # contexto e estudo (mantém a raiz de docs/ limpa)
+│       ├── tap.md                        # briefing original do projeto
+│       ├── estudo-materiais-textuais.md  # resumo dos textos (Sequoia, Emergence, NVIDIA)
+│       ├── tranc_youtube.md              # transcrições dos vídeos (NVIDIA Inception)
+│       └── estudo-videos.md              # resumo dos vídeos (NVIDIA Inception)
 ├── src/                          # código-fonte (src layout — pacotes instalados em modo editável via uv)
 │   ├── agents/
 │   │   ├── search_planner.py
@@ -525,9 +525,13 @@ Objetivo: dashboard utilizável pelo gerente da NVIDIA para consultar, visualiza
 
 ## Documentos de Referência
 
-Use `@docs/architecture.md`, `@docs/agents.md`, `@docs/decisions.md` etc. ao iniciar sessões
-que precisem de contexto específico. Não coloque tudo aqui — mantenha este arquivo focado no
-essencial para toda sessão.
+Materiais de contexto e estudo ficam em `docs/referencias/`:
+- `referencias/tap.md` — briefing original do projeto (TAPI).
+- `referencias/estudo-materiais-textuais.md` — framework AI-native (Sequoia, Emergence) + "5-layer cake" (NVIDIA).
+- `referencias/estudo-videos.md` — NVIDIA Inception: elegibilidade, benefícios, critérios de avaliação, ferramentas.
+- `referencias/tranc_youtube.md` — transcrições brutas dos vídeos.
+
+Mantenha este arquivo (CLAUDE.md) focado no essencial para toda sessão; o detalhe vai nas referências.
 
 ---
 
