@@ -593,4 +593,6 @@ Registrar em `docs/decisions.md` quando resolvidas.
 - [ ] **Escopo do Entregável 6** — diferencial a definir com base em dores reais do parceiro. Atacar após os entregáveis 1–4 estarem funcionando.
 - [ ] **Ordem final de ingestão da base RAG NVIDIA** — recomendação atual: contextuais primeiro, depois docs oficiais por tecnologia.
 - [ ] **Modelo LLM de produção** — Bloco 0 validado com `nvidia/nemotron-nano-9b-v2:free` (grátis, porém instável: vimos rate-limit `429` e retorno vazio durante os testes). Antes do Bloco 3 (pipeline multi-agente, muitas chamadas), definir um modelo pago barato e confiável + crédito no OpenRouter.
-- [ ] **Provider de embeddings** — não definido. Necessário no Bloco 2 (RAG). Opções: OpenAI, Cohere, Gemini ou local (sentence-transformers). Placeholder comentado já existe no `.env.example`.
+- [x] **Provider de embeddings** — RESOLVIDO: local via fastembed (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, 384 dims, multilíngue). Sem chave nem custo.
+- [ ] **Versão do Qdrant** (pós-MVP) — cliente `qdrant-client` 1.18 vs imagem do servidor 1.12.4. Alinhar subindo a tag da imagem no `docker-compose.yml` (re-pull + re-ingestão).
+- [ ] **Estratégia de enriquecimento** — terminar o MVP (mínimo de todos os blocos, ponta a ponta) ANTES de qualquer enriquecimento. Só então: ingerir as 16 tecnologias NVIDIA, busca híbrida (BM25), rerank com Cohere, teste amplo.
