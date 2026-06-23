@@ -390,9 +390,9 @@ Objetivo: RAG funcional sobre tecnologias NVIDIA com qualidade de recuperação 
 
 **Mínimo funcional — implementar e validar antes de ingerir tudo:**
 - [x] Estudo dos materiais contextuais (Sequoia, Emergence, NVIDIA blog) antes de qualquer código — resumido em `docs/referencias/estudo-materiais-textuais.md` e `estudo-videos.md`
-- [ ] Pipeline RAG básica funcionando: ingestão → chunking → embeddings → Qdrant → recuperação
-- [ ] Ingestão de 2–3 tecnologias NVIDIA (ex: NIM, NeMo, Inception)
-- [ ] Teste: pergunta sobre NIM retorna resposta relevante com citação de fonte
+- [x] Pipeline RAG básica funcionando: ingestão → chunking → embeddings → Qdrant → recuperação
+- [x] Ingestão de 2–3 tecnologias NVIDIA (NIM, NeMo, Inception) — embeddings locais via fastembed
+- [x] Teste: pergunta sobre NIM retorna resposta relevante com citação de fonte (via `scripts/ask_nvidia.py`)
 
 **Enriquecimento — só depois do mínimo validado:**
 - [ ] Ingestão dos materiais contextuais completos
@@ -492,11 +492,13 @@ Objetivo: dashboard utilizável pelo gerente da NVIDIA para consultar, visualiza
 │   ├── graph/
 │   │   └── pipeline.py           # Grafo LangGraph principal
 │   ├── rag/
-│   │   ├── ingestion.py
-│   │   ├── chunking.py
-│   │   ├── embeddings.py
-│   │   ├── retrieval.py
-│   │   └── reranker.py
+│   │   ├── embeddings.py         # fastembed (modelo local, 384 dims)
+│   │   ├── chunking.py           # quebra texto em chunks
+│   │   ├── vector_store.py       # cliente Qdrant + coleção
+│   │   ├── ingestion.py          # página → chunks → vetores → Qdrant
+│   │   ├── retrieval.py          # busca por similaridade no Qdrant
+│   │   ├── generation.py         # LLM responde com base nos trechos + cita fonte
+│   │   └── reranker.py           # Cohere rerank (enriquecimento, futuro)
 │   ├── scraping/
 │   │   ├── scrapling_fetcher.py  # fetch + parsing + anti-bot (substitui playwright + bs4)
 │   │   ├── firecrawl_client.py   # extração de conteúdo limpo para RAG
