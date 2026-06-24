@@ -405,10 +405,10 @@ Objetivo: RAG funcional sobre tecnologias NVIDIA com qualidade de recuperação 
 Objetivo: LangGraph orquestrando agentes com classificação de maturidade funcionando.
 
 **Mínimo funcional — pipeline simples de ponta a ponta antes de qualquer refinamento:**
-- [ ] Grafo LangGraph com 3 agentes básicos: Scraper → Extractor → Classifier
-- [ ] Classifier Agent respondendo o checklist de 6 perguntas com o que já foi coletado
-- [ ] Output com nível de classificação + checklist preenchido (inconclusivo é válido)
-- [ ] Teste com 1 startup real: classificação faz sentido?
+- [x] Grafo LangGraph com 3 agentes básicos: Scraper → Extractor → Classifier
+- [x] Classifier Agent respondendo o checklist de 6 perguntas com o que já foi coletado
+- [x] Output com nível de classificação + checklist preenchido (inconclusivo é válido)
+- [x] Teste com 1 startup real: classificação faz sentido? (Hand Talk → AI-enabled/nível 2, via `scripts/classify_startup.py`)
 
 **Enriquecimento — só depois do mínimo validado:**
 - [ ] Search Planner Agent integrado
@@ -481,16 +481,18 @@ Objetivo: dashboard utilizável pelo gerente da NVIDIA para consultar, visualiza
 │       └── estudo-videos.md              # resumo dos vídeos (NVIDIA Inception)
 ├── src/                          # código-fonte (src layout — pacotes instalados em modo editável via uv)
 │   ├── agents/
-│   │   ├── search_planner.py
-│   │   ├── scraper.py
-│   │   ├── extractor.py
-│   │   ├── classifier.py
-│   │   ├── evidence_validator.py
-│   │   ├── nvidia_rag.py
-│   │   ├── recommender.py
-│   │   └── briefing.py
+│   │   ├── llm.py                # helper de chamada ao LLM (OpenRouter), compartilhado
+│   │   ├── scraper.py            # [Bloco 3] coleta o texto da startup
+│   │   ├── extractor.py          # [Bloco 3] texto bruto → dados estruturados (LLM)
+│   │   ├── classifier.py         # [Bloco 3] checklist + nível de maturidade (LLM)
+│   │   ├── search_planner.py     # (futuro)
+│   │   ├── evidence_validator.py # (futuro)
+│   │   ├── nvidia_rag.py         # (futuro)
+│   │   ├── recommender.py        # (futuro)
+│   │   └── briefing.py           # (futuro)
 │   ├── graph/
-│   │   └── pipeline.py           # Grafo LangGraph principal
+│   │   ├── state.py              # estado compartilhado do grafo (TypedDict)
+│   │   └── pipeline.py           # grafo LangGraph (Scraper → Extractor → Classifier)
 │   ├── rag/
 │   │   ├── embeddings.py         # fastembed (modelo local, 384 dims)
 │   │   ├── chunking.py           # quebra texto em chunks
