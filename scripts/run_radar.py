@@ -25,6 +25,12 @@ def main() -> int:
     final = graph.invoke({"startup_name": startup_name, "url": url})
 
     print(f"Classificacao: nivel {final.get('level')} - {final.get('level_name')}\n")
+
+    print("Tecnologias NVIDIA mais proximas do perfil (similaridade de cosseno, 0 a 1):")
+    for c in final.get("nvidia_context", []):
+        print(f"  {c.get('score'):.3f}  [{c.get('technology')}]  {c.get('source_url')}")
+    print()
+
     print("=" * 60)
     print("BRIEFING EXECUTIVO")
     print("=" * 60)
