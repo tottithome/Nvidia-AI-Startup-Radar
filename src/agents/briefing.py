@@ -22,12 +22,25 @@ def briefing_node(state: StartupState) -> dict:
         for item in checklist
     )
 
+    recommendations = state.get("recommendations")
+    if recommendations:
+        rec_txt = f"Recomendações geradas:\n{recommendations}"
+    else:
+        # Caminho Non-AI: o grafo pulou o RAG e o recommender de propósito (nível 0).
+        rec_txt = (
+            "Sem recomendações NVIDIA por ora: a startup foi classificada como Non-AI "
+            "(IA ausente ou apenas cosmética), então não há fit técnico no momento. "
+            "Mantenha o tom de nutrir: aponte de forma construtiva o que mudaria esse "
+            "quadro (ex.: adoção real de IA no produto) e sugira uma próxima ação leve "
+            "de relacionamento, sem recomendar tecnologias NVIDIA específicas."
+        )
+
     user_prompt = (
         f"Startup: {state.get('startup_name')}\n"
         f"Maturidade: nível {state.get('level')} ({state.get('level_name')})\n"
         f"Justificativa da classificação: {state.get('rationale')}\n\n"
         f"Checklist preenchido:\n{checklist_txt}\n\n"
-        f"Recomendações geradas:\n{state.get('recommendations')}\n\n"
+        f"{rec_txt}\n\n"
         f"Escreva o briefing executivo."
     )
 
