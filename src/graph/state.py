@@ -16,6 +16,7 @@ class StartupState(TypedDict, total=False):
 
     # --- preenchido pelo Scraper ---
     raw_text: str
+    scrape_aviso: str  # aviso quando a coleta vem fraca (ex.: site SPA/JS)
 
     # --- preenchido pelo Extractor ---
     structured: dict

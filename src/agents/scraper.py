@@ -1,18 +1,32 @@
 """Scraper Agent: coloca o texto público da startup no estado.
 
-Reaproveita o scraper do Bloco 1 (Scrapling para baixar + trafilatura para limpar).
+Usa o coletor multi-página (home + páginas internas relevantes), do enriquecimento
+da coleta — assim o Extractor e o Classifier recebem um texto mais rico.
 """
 
 from __future__ import annotations
 
 from graph.state import StartupState
-from scraping.scrapling_fetcher import fetch_html
-from scraping.trafilatura_parser import extract_main_text
+from scraping.site_collector import collect_site_text
+
+MIN_CHARS_UTEIS = 1000  # abaixo disso, a coleta é considerada fraca
 
 
 def scraper_node(state: StartupState) -> dict:
-    """Baixa o site da startup e devolve o texto limpo no campo raw_text."""
+    """Coleta o texto da startup (multi-página) e devolve no campo raw_text.
+
+    Se a coleta vier fraca (pouco texto, típico de site SPA/JS), preenche um
+    aviso em 'scrape_aviso' para o resultado deixar claro que a análise ficou
+    limitada pela falta de conteúdo.
+    """
     url = state["url"]
-    html = fetch_html(url)
-    text = extract_main_text(html, url=url) or ""
-    return {"raw_text": text}
+    texto = collect_site_text(url)
+
+    aviso = ""
+    if len(texto) < MIN_CHARS_UTEIS:
+        aviso = (
+            f"Coleta fraca: apenas {len(texto)} caracteres extraídos de {url}. "
+            "O site pode ser renderizado por JavaScript (SPA); a análise pode estar limitada."
+        )
+
+    return {"raw_text": texto, "scrape_aviso": aviso}

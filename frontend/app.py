@@ -31,6 +31,11 @@ if st.button("Analisar", type="primary"):
             grafo = build_graph()
             final = grafo.invoke({"startup_name": nome, "url": url})
 
+        # Aviso de coleta fraca (ex.: site SPA/JS)
+        aviso = final.get("scrape_aviso")
+        if aviso:
+            st.warning(aviso)
+
         # Classificação
         st.subheader(f"Classificação: nível {final.get('level')} — {final.get('level_name')}")
 

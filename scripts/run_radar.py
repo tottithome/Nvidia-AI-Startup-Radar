@@ -24,6 +24,10 @@ def main() -> int:
     print(f"Rodando o radar para '{startup_name}' ({url})...\n")
     final = graph.invoke({"startup_name": startup_name, "url": url})
 
+    aviso = final.get("scrape_aviso")
+    if aviso:
+        print(f"[AVISO] {aviso}\n")
+
     print(f"Classificacao: nivel {final.get('level')} - {final.get('level_name')}\n")
 
     print("Tecnologias NVIDIA mais proximas do perfil (similaridade de cosseno, 0 a 1):")
