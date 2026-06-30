@@ -25,3 +25,12 @@ class StartupState(TypedDict, total=False):
     level: int
     level_name: str
     rationale: str
+
+    # --- preenchido pelo NVIDIA RAG Agent ---
+    nvidia_context: list[dict]
+
+    # --- preenchido pelo Recommendation Agent ---
+    recommendations: str
+
+    # --- preenchido pelo Briefing Agent ---
+    briefing: str
