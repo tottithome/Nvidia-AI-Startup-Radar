@@ -420,10 +420,10 @@ Objetivo: LangGraph orquestrando agentes com classificação de maturidade funci
 Objetivo: pipeline completa gerando briefing executivo utilizável para o gerente da NVIDIA.
 
 **Mínimo funcional — 1 startup gerando briefing de ponta a ponta antes de refinar:**
-- [ ] NVIDIA RAG Agent consultando a base com contexto da startup
-- [ ] Recommendation Agent gerando recomendações básicas
-- [ ] Briefing Agent gerando relatório simples mas completo
-- [ ] Teste: dado "Startup X", o briefing gerado faz sentido e seria útil ao gerente?
+- [x] NVIDIA RAG Agent consultando a base com contexto da startup
+- [x] Recommendation Agent gerando recomendações básicas
+- [x] Briefing Agent gerando relatório simples mas completo
+- [x] Teste: dado "Startup X", o briefing gerado faz sentido e seria útil ao gerente? (validado com Hand Talk via `scripts/run_radar.py`)
 
 **Enriquecimento — só depois do mínimo validado:**
 - [ ] Output estruturado completo: justificativa técnica, justificativa de negócio, prioridade, complexidade, próxima ação, evidências
@@ -591,8 +591,8 @@ Registradas aqui para rastreabilidade. Detalhes em `docs/decisions.md`.
 
 Registrar em `docs/decisions.md` quando resolvidas.
 
-- [ ] **Formato do briefing executivo** — validar com o gerente de Startups & VCs se houver template preferido antes de implementar o Briefing Agent.
-- [ ] **Escopo do Entregável 6** — diferencial a definir com base em dores reais do parceiro. Atacar após os entregáveis 1–4 estarem funcionando.
+- [x] **Formato do briefing executivo** — DECIDIDO por nós (sem validação externa): markdown com seções Resumo / Classificação + justificativa / Recomendações NVIDIA / Próxima ação. Refinável depois.
+- [ ] **Escopo do Entregável 6** — diferencial a definir por nós, após os entregáveis 1–4 estarem funcionando.
 - [ ] **Ordem final de ingestão da base RAG NVIDIA** — recomendação atual: contextuais primeiro, depois docs oficiais por tecnologia.
 - [ ] **Modelo LLM de produção** — Bloco 0 validado com `nvidia/nemotron-nano-9b-v2:free` (grátis, porém instável: vimos rate-limit `429` e retorno vazio durante os testes). Antes do Bloco 3 (pipeline multi-agente, muitas chamadas), definir um modelo pago barato e confiável + crédito no OpenRouter.
 - [x] **Provider de embeddings** — RESOLVIDO: local via fastembed (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, 384 dims, multilíngue). Sem chave nem custo.
