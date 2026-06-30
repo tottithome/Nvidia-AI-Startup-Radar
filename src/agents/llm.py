@@ -29,6 +29,7 @@ def ask_llm(system_prompt: str, user_prompt: str, max_tokens: int = 800) -> str:
             {"role": "user", "content": user_prompt},
         ],
         max_tokens=max_tokens,
+        temperature=0,  # determinístico: mesma entrada -> mesma saída (estabiliza a classificação)
     )
     if not response.choices:
         return ""
