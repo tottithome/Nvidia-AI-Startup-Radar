@@ -14,15 +14,24 @@ from graph.pipeline import build_graph
 
 
 def main() -> int:
-    if len(sys.argv) != 3:
-        print('Uso: uv run python scripts/run_radar.py "Nome da Startup" <url>')
+    if len(sys.argv) not in (2, 3):
+        print('Uso: uv run python scripts/run_radar.py "Nome da Startup" [url-opcional]')
         return 1
 
-    startup_name, url = sys.argv[1], sys.argv[2]
+    startup_name = sys.argv[1]
+    url = sys.argv[2] if len(sys.argv) == 3 else ""
 
     graph = build_graph()
-    print(f"Rodando o radar para '{startup_name}' ({url})...\n")
+    if url:
+        print(f"Rodando o radar para '{startup_name}' ({url})...\n")
+    else:
+        print(f"Rodando o radar para '{startup_name}' (descobrindo o site...)\n")
     final = graph.invoke({"startup_name": startup_name, "url": url})
+
+    # Quando a URL não foi informada, mostra qual o Search Planner descobriu.
+    site = final.get("url")
+    if site and not url:
+        print(f"Site descoberto: {site}\n")
 
     aviso = final.get("scrape_aviso")
     if aviso:
