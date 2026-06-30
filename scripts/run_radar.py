@@ -28,7 +28,12 @@ def main() -> int:
     if aviso:
         print(f"[AVISO] {aviso}\n")
 
-    print(f"Classificacao: nivel {final.get('level')} - {final.get('level_name')}\n")
+    nivel = final.get("level")
+    if nivel is None:
+        # Caminho de curto-circuito (coleta insuficiente): não houve classificação.
+        print(f"Classificacao: {final.get('level_name')}\n")
+    else:
+        print(f"Classificacao: nivel {nivel} - {final.get('level_name')}\n")
 
     print("Tecnologias NVIDIA mais proximas do perfil (similaridade de cosseno, 0 a 1):")
     for c in final.get("nvidia_context", []):

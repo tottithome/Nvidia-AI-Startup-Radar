@@ -9,7 +9,15 @@ from __future__ import annotations
 from graph.state import StartupState
 from scraping.site_collector import collect_site_text
 
+# Dois limiares de qualidade da coleta:
+# - abaixo de MIN_CHARS_UTEIS: coleta FRACA -> ainda analisa, mas avisa.
+# - abaixo de MIN_CHARS_MINIMO: coleta INSUFICIENTE -> nem dá pra classificar;
+#   o grafo curto-circuita (ver route_after_scraper em graph/routing.py) e não
+#   gasta as 4 chamadas de LLM. Bem mais baixo que o aviso de propósito: uma
+#   coleta modesta (ex.: site institucional simples) ainda rende uma classificação
+#   válida, então só abortamos quando voltou praticamente nada (típico de SPA/JS).
 MIN_CHARS_UTEIS = 1000  # abaixo disso, a coleta é considerada fraca
+MIN_CHARS_MINIMO = 200  # abaixo disso, é insuficiente para qualquer análise
 
 
 def scraper_node(state: StartupState) -> dict:

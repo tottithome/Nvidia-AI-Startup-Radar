@@ -1,10 +1,15 @@
 """Grafo LangGraph que orquestra os agentes da pipeline.
 
-Fluxo: START → scraper → extractor → classifier → [roteamento] → ... → briefing → END.
-Depois do classifier o caminho deixa de ser fixo: startups Non-AI (nível 0) pulam o
-RAG e o recommender e vão direto ao briefing — é o primeiro ponto realmente agêntico
-do grafo. As demais seguem o caminho completo (nvidia_rag → recommender → briefing).
-O estado (StartupState) vai sendo preenchido por cada nó ao longo do caminho.
+Fluxo: START → scraper → [roteamento] → extractor → classifier → [roteamento] → ... → END.
+O grafo NÃO é mais linear — tem dois pontos de decisão (é o que o torna agêntico):
+
+1. Depois do scraper: se a coleta veio praticamente vazia (site SPA/JS), desvia
+   para 'insufficient_data' e encerra sem gastar LLM, em vez de analisar o nada.
+2. Depois do classifier: startups Non-AI (nível 0) pulam o RAG e o recommender e
+   vão direto ao briefing — não há stack NVIDIA a recomendar.
+
+As decisões ficam em graph/routing.py. O estado (StartupState) vai sendo preenchido
+por cada nó ao longo do caminho.
 """
 
 from __future__ import annotations
@@ -17,26 +22,36 @@ from agents.extractor import extractor_node
 from agents.nvidia_rag import nvidia_rag_node
 from agents.recommender import recommender_node
 from agents.scraper import scraper_node
+from graph.routing import route_after_classifier, route_after_scraper
 from graph.state import StartupState
 
 
-def route_after_classifier(state: StartupState) -> str:
-    """Decide o caminho depois da classificação (1ª aresta condicional do grafo).
+def insufficient_data_node(state: StartupState) -> dict:
+    """Nó de desvio: coleta insuficiente → encerra com um resultado honesto.
 
-    Non-AI (nível 0): IA ausente ou só cosmética — não há stack NVIDIA a recomendar,
-    então pula o RAG e o recommender e vai direto ao briefing. Qualquer outro nível
-    (1 a 3) segue o caminho completo.
-
-    Aceita o nível como número (0) ou texto ("0"), pois o LLM pode devolver qualquer
-    um dos dois. Na dúvida (nível ausente/inesperado), segue o caminho completo.
+    Não chama LLM. Em vez de classificar/recomendar sem base (e gastar 4 chamadas),
+    devolve um briefing claro de 'dados insuficientes'. Quando o fetcher de navegador
+    do P1 existir, este será o ponto natural para um fallback real de coleta.
     """
-    if str(state.get("level")) == "0":
-        return "briefing"
-    return "nvidia_rag"
+    nome = state.get("startup_name", "a startup")
+    url = state.get("url", "")
+    briefing = (
+        "# Briefing não gerado — dados insuficientes\n\n"
+        f"A coleta pública de **{nome}** ({url}) trouxe conteúdo insuficiente para uma "
+        "análise confiável (provável site SPA/JavaScript, que só renderiza o conteúdo "
+        "no navegador). A análise foi interrompida para não gerar classificação e "
+        "recomendações sem base.\n\n"
+        "**Próximo passo:** coletar via fetcher de navegador (previsto no P1) ou "
+        "informar uma URL/fonte com conteúdo legível."
+    )
+    return {
+        "level_name": "Não classificado (dados insuficientes)",
+        "briefing": briefing,
+    }
 
 
 def build_graph():
-    """Monta e compila o grafo dos 3 agentes."""
+    """Monta e compila o grafo de agentes, com os dois pontos de roteamento."""
     builder = StateGraph(StartupState)
 
     # Registra os nós (cada um é uma função que recebe e atualiza o estado).
@@ -46,14 +61,21 @@ def build_graph():
     builder.add_node("nvidia_rag", nvidia_rag_node)
     builder.add_node("recommender", recommender_node)
     builder.add_node("briefing", briefing_node)
+    builder.add_node("insufficient_data", insufficient_data_node)
 
-    # Liga os nós em sequência.
     builder.add_edge(START, "scraper")
-    builder.add_edge("scraper", "extractor")
+
+    # 1ª aresta condicional: coleta vazia → curto-circuito; senão → extractor.
+    builder.add_conditional_edges(
+        "scraper",
+        route_after_scraper,
+        {"extractor": "extractor", "insufficient_data": "insufficient_data"},
+    )
+    builder.add_edge("insufficient_data", END)
+
     builder.add_edge("extractor", "classifier")
 
-    # Aresta condicional: depois de classificar, o caminho depende do nível.
-    # Non-AI (0) → briefing direto; demais → caminho completo (RAG → recommender).
+    # 2ª aresta condicional: Non-AI (0) → briefing direto; demais → caminho completo.
     builder.add_conditional_edges(
         "classifier",
         route_after_classifier,
