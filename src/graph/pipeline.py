@@ -20,6 +20,7 @@ from langgraph.graph import END, START, StateGraph
 from agents.briefing import briefing_node
 from agents.classifier import classifier_node
 from agents.extractor import extractor_node
+from agents.github import github_node
 from agents.nvidia_rag import nvidia_rag_node
 from agents.recommender import recommender_node
 from agents.scraper import scraper_node
@@ -77,6 +78,7 @@ def build_graph():
     builder.add_node("search_planner", search_planner_node)
     builder.add_node("scraper", scraper_node)
     builder.add_node("extractor", extractor_node)
+    builder.add_node("github", github_node)
     builder.add_node("classifier", classifier_node)
     builder.add_node("nvidia_rag", nvidia_rag_node)
     builder.add_node("recommender", recommender_node)
@@ -94,7 +96,8 @@ def build_graph():
     )
     builder.add_edge("insufficient_data", END)
 
-    builder.add_edge("extractor", "classifier")
+    builder.add_edge("extractor", "github")
+    builder.add_edge("github", "classifier")
 
     # 2ª aresta condicional: Non-AI (0) → briefing direto; demais → caminho completo.
     builder.add_conditional_edges(

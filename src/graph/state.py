@@ -21,6 +21,9 @@ class StartupState(TypedDict, total=False):
     # --- preenchido pelo Extractor ---
     structured: dict
 
+    # --- preenchido pelo GitHub Agent (sinal "produz vs. consome") ---
+    github: dict
+
     # --- preenchido pelo Classifier ---
     checklist: list[dict]
     level: int
