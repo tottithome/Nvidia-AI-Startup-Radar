@@ -7,7 +7,7 @@ sessões, commits, etc.
 
 from __future__ import annotations
 
-from db.models import ScrapedDocument
+from db.models import Analysis, ScrapedDocument
 from db.session import SessionLocal
 
 
@@ -42,3 +42,80 @@ def save_scraped_document(
         #    recarrega esses valores do banco para dentro do objeto.
         session.refresh(doc)
         return doc.id
+
+
+def save_analysis(state: dict) -> int:
+    """Salva o resultado de uma análise do grafo (o estado final) e devolve o id.
+
+    Recebe o dicionário de estado final do grafo e mapeia os campos relevantes
+    para a tabela 'analyses'. Campos ausentes viram vazio/None.
+    """
+    with SessionLocal() as session:
+        analysis = Analysis(
+            startup_name=state.get("startup_name", ""),
+            url=state.get("url", "") or "",
+            level=state.get("level"),
+            level_name=state.get("level_name") or "",
+            rationale=state.get("rationale") or "",
+            checklist=state.get("checklist") or [],
+            structured=state.get("structured") or {},
+            recommendations=state.get("recommendations") or "",
+            briefing=state.get("briefing") or "",
+        )
+        session.add(analysis)
+        session.commit()
+        session.refresh(analysis)
+        return analysis.id
+
+
+def get_latest_analysis(startup_name: str) -> dict | None:
+    """Devolve a análise mais recente salva para uma startup (ou None se não houver).
+
+    Usado pelo frontend para CARREGAR uma análise já feita, sem rodar o grafo de
+    novo (economiza LLM e é instantâneo).
+    """
+    with SessionLocal() as session:
+        a = (
+            session.query(Analysis)
+            .filter(Analysis.startup_name == startup_name)
+            .order_by(Analysis.created_at.desc())
+            .first()
+        )
+        if a is None:
+            return None
+        return {
+            "startup_name": a.startup_name,
+            "url": a.url,
+            "level": a.level,
+            "level_name": a.level_name,
+            "rationale": a.rationale,
+            "checklist": a.checklist,
+            "structured": a.structured,
+            "recommendations": a.recommendations,
+            "briefing": a.briefing,
+        }
+
+
+def list_analyses(limit: int = 50) -> list[dict]:
+    """Lista as análises já salvas (mais recentes primeiro), em forma resumida.
+
+    Serve de base para o catálogo/seletor de startups no frontend: o usuário
+    escolhe uma startup já analisada sem precisar informar a URL de novo.
+    """
+    with SessionLocal() as session:
+        linhas = (
+            session.query(Analysis)
+            .order_by(Analysis.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+        return [
+            {
+                "id": a.id,
+                "startup_name": a.startup_name,
+                "url": a.url,
+                "level": a.level,
+                "level_name": a.level_name,
+            }
+            for a in linhas
+        ]
