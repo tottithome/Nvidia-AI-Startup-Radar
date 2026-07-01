@@ -1,4 +1,4 @@
-"""Interface web (Streamlit) do NVIDIA Startup AI Radar.
+"""Interface web (Streamlit) do NVIDIA Startup AI Radar — tema NVIDIA (verde + escuro).
 
 Duas abas:
 - Analisar startup (MICRO): escolhe do catálogo ou digita, roda o grafo, mostra
@@ -22,8 +22,33 @@ from db.repository import get_latest_analysis, save_analysis
 from db.session import init_db
 from graph.pipeline import build_graph
 
+NV_GREEN = "#76B900"
+
 st.set_page_config(page_title="NVIDIA Startup AI Radar", page_icon="🟢", layout="wide")
-st.title("NVIDIA Startup AI Radar")
+
+# --- Estilo NVIDIA (acentos verdes sobre o tema escuro do config.toml) ---
+st.markdown(
+    f"""
+    <style>
+      a, a:visited {{ color: {NV_GREEN} !important; }}
+      [data-testid="stMetricValue"] {{ color: {NV_GREEN}; }}
+      .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {{ color: {NV_GREEN}; }}
+      .stTabs [data-baseweb="tab-highlight"] {{ background-color: {NV_GREEN}; }}
+      .nv-accent {{ height: 5px; background: linear-gradient(90deg,{NV_GREEN},#3d5e14);
+                    border-radius: 3px; margin-bottom: 0.7rem; }}
+      .nv-title {{ font-size: 2.15rem; font-weight: 800; letter-spacing: -0.5px; margin: 0; }}
+      .nv-badge {{ display:inline-block; padding: 5px 16px; border-radius: 999px;
+                   font-weight: 700; font-size: 0.95rem; }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown('<div class="nv-accent"></div>', unsafe_allow_html=True)
+st.markdown(
+    f'<div class="nv-title">NVIDIA <span style="color:{NV_GREEN};">Startup AI Radar</span></div>',
+    unsafe_allow_html=True,
+)
 st.caption("Classifica a maturidade em IA de startups brasileiras e recomenda tecnologias NVIDIA.")
 
 _banco_ok = True
@@ -33,6 +58,24 @@ except Exception:  # noqa: BLE001
     _banco_ok = False
     st.info("Banco indisponível: catálogo limitado à seed; análises não serão salvas.")
 
+# Cores dos níveis: verde forte (AI-native) → cinza (menos maduro).
+_CORES_NIVEL = {
+    3: ("#76B900", "#0B0B0B"),
+    2: ("#3f7d1f", "#FFFFFF"),
+    1: ("#6b6b6b", "#FFFFFF"),
+    0: ("#3a3a3a", "#FFFFFF"),
+}
+
+
+def _badge_nivel(level, level_name: str) -> str:
+    bg, fg = _CORES_NIVEL.get(level, ("#3a3a3a", "#DDDDDD"))
+    if level is None:
+        texto = level_name or "Não classificado"
+    else:
+        texto = f"Nível {level} — {level_name}"
+    return f'<span class="nv-badge" style="background:{bg};color:{fg};">{texto}</span>'
+
+
 tab_micro, tab_macro = st.tabs(["🔍 Analisar startup", "📊 Radar de Mercado"])
 
 
@@ -40,12 +83,12 @@ tab_micro, tab_macro = st.tabs(["🔍 Analisar startup", "📊 Radar de Mercado"
 # MICRO — análise de uma startup
 # ----------------------------------------------------------------------------
 def _render_analise(resultado: dict) -> None:
-    nivel = resultado.get("level")
-    if nivel is None:
-        st.subheader(f"Classificação: {resultado.get('level_name') or 'Não classificado'}")
-    else:
-        st.subheader(f"Classificação: nível {nivel} — {resultado.get('level_name')}")
+    st.markdown(
+        _badge_nivel(resultado.get("level"), resultado.get("level_name") or ""),
+        unsafe_allow_html=True,
+    )
     if resultado.get("rationale"):
+        st.write("")
         st.write(resultado["rationale"])
 
     if resultado.get("structured"):
@@ -128,23 +171,28 @@ with tab_macro:
         st.info("Nenhuma análise salva ainda. Analise startups na outra aba (ou rode "
                 "`uv run python scripts/analyze_catalog.py`).")
     else:
-        c1, c2 = st.columns([1, 1])
+        st.metric("Startups analisadas", radar["total"])
+
+        c1, c2 = st.columns(2)
         with c1:
-            st.metric("Startups analisadas", radar["total"])
             st.write("**Distribuição de maturidade**")
             dist_df = pd.DataFrame(
                 list(radar["distribuicao"].items()), columns=["Nível", "Startups"]
             ).set_index("Nível")
-            st.bar_chart(dist_df)
+            st.bar_chart(dist_df, color=NV_GREEN)
         with c2:
             st.write("**Tecnologias NVIDIA mais demandadas**")
-            for tech, n in radar["top_tecnologias"]:
-                st.write(f"- **{tech}** — {n} startups")
+            tech_df = pd.DataFrame(
+                radar["top_tecnologias"], columns=["Tecnologia", "Startups"]
+            ).set_index("Tecnologia")
+            st.bar_chart(tech_df, color=NV_GREEN, horizontal=True)
 
         st.write("**Prioridade de abordagem** (mais madura primeiro)")
         for p in radar["prioridade"]:
-            nivel = p["level"] if p["level"] is not None else "—"
-            st.write(f"- `nível {nivel}` — {p['startup']}")
+            st.markdown(
+                _badge_nivel(p["level"], p["level_name"] or "") + f"&nbsp;&nbsp; {p['startup']}",
+                unsafe_allow_html=True,
+            )
 
         st.divider()
         if st.button("Gerar leitura estratégica de mercado (1 chamada LLM)"):
