@@ -50,6 +50,13 @@ def save_analysis(state: dict) -> int:
     Recebe o dicionário de estado final do grafo e mapeia os campos relevantes
     para a tabela 'analyses'. Campos ausentes viram vazio/None.
     """
+    # Extrai os nomes únicos das tecnologias NVIDIA recuperadas (para a macro agregar).
+    techs: list[str] = []
+    for chunk in state.get("nvidia_context") or []:
+        t = chunk.get("technology")
+        if t and t not in techs:
+            techs.append(t)
+
     with SessionLocal() as session:
         analysis = Analysis(
             startup_name=state.get("startup_name", ""),
@@ -61,6 +68,7 @@ def save_analysis(state: dict) -> int:
             structured=state.get("structured") or {},
             recommendations=state.get("recommendations") or "",
             briefing=state.get("briefing") or "",
+            technologies=techs,
         )
         session.add(analysis)
         session.commit()

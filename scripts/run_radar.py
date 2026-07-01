@@ -53,6 +53,19 @@ def main() -> int:
     print("BRIEFING EXECUTIVO")
     print("=" * 60)
     print(final.get("briefing") or "(briefing vazio - possivel instabilidade do LLM)")
+
+    # Persiste a análise no Postgres. Opcional: se o banco não estiver no ar, apenas
+    # avisa e segue — não derruba o resultado que já foi exibido acima.
+    try:
+        from db.repository import save_analysis
+        from db.session import init_db
+
+        init_db()  # cria a tabela 'analyses' se ainda não existir (idempotente)
+        analysis_id = save_analysis(final)
+        print(f"\n[persistido no Postgres: analise #{analysis_id}]")
+    except Exception as e:  # noqa: BLE001 — persistência é opcional, não pode quebrar o run
+        print(f"\n[aviso: analise nao persistida no Postgres: {type(e).__name__}: {e}]")
+
     return 0
 
 

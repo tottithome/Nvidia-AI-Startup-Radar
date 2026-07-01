@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, Text, func
+from sqlalchemy import JSON, DateTime, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -59,4 +59,45 @@ class ScrapedDocument(Base):
         return (
             f"<ScrapedDocument id={self.id} "
             f"startup={self.startup_name!r} url={self.source_url!r}>"
+        )
+
+
+class Analysis(Base):
+    """O resultado de UMA análise completa do grafo para uma startup.
+
+    Guarda o que o radar produziu (classificação + checklist + recomendações +
+    briefing), para não reprocessar, para o catálogo listar startups já analisadas
+    e para o frontend exibir sem rodar tudo de novo.
+    """
+
+    __tablename__ = "analyses"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    startup_name: Mapped[str] = mapped_column(String(255), index=True)
+    url: Mapped[str] = mapped_column(String(2048), default="")
+
+    # Classificação (level pode ser nulo no caminho de "dados insuficientes").
+    level: Mapped[int | None] = mapped_column(nullable=True, default=None)
+    level_name: Mapped[str] = mapped_column(String(100), default="")
+    rationale: Mapped[str] = mapped_column(Text, default="")
+
+    # Estruturas ricas guardadas como JSON (checklist preenchido e perfil extraído).
+    checklist: Mapped[list] = mapped_column(JSON, default=list)
+    structured: Mapped[dict] = mapped_column(JSON, default=dict)
+
+    # Tecnologias NVIDIA recuperadas para a startup (nomes únicos) — o Radar de
+    # Mercado (macro) agrega isto para ver as tecnologias mais demandadas.
+    technologies: Mapped[list] = mapped_column(JSON, default=list)
+
+    recommendations: Mapped[str] = mapped_column(Text, default="")
+    briefing: Mapped[str] = mapped_column(Text, default="")
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Analysis id={self.id} startup={self.startup_name!r} "
+            f"level={self.level}>"
         )
