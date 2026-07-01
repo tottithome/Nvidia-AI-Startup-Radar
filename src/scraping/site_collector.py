@@ -13,7 +13,11 @@ from urllib.parse import urljoin, urlparse
 
 from scrapling.fetchers import Fetcher
 
+from scraping.scrapling_fetcher import fetch_html_browser
 from scraping.trafilatura_parser import extract_main_text
+
+# Abaixo disso, a coleta HTTP é considerada fraca e vale tentar o navegador (SPA).
+WEAK_COLLECTION_CHARS = 1000
 
 # Pistas no link que indicam páginas ricas em contexto técnico/institucional.
 RELEVANT_HINTS = (
@@ -75,4 +79,18 @@ def collect_site_text(base_url: str, max_pages: int = 5, timeout: int = 30) -> s
         if texto:
             partes.append(f"# Fonte: {url}\n{texto}")
 
-    return "\n\n".join(partes)
+    texto_final = "\n\n".join(partes)
+
+    # Fallback para SPAs: se a coleta HTTP veio fraca, tenta renderizar a home num
+    # navegador (JS). Requer 'scrapling install'; se falhar ou não estiver instalado,
+    # a exceção é engolida e mantemos o resultado do fetch HTTP (degrada com elegância).
+    if len(texto_final) < WEAK_COLLECTION_CHARS:
+        try:
+            html_js = fetch_html_browser(base_url)
+            texto_js = extract_main_text(html_js, url=base_url) or ""
+            if len(texto_js) > len(texto_final):
+                texto_final = f"# Fonte: {base_url} (renderizado via navegador)\n{texto_js}"
+        except Exception:  # noqa: BLE001 — sem navegador ou falha: mantém a coleta HTTP
+            pass
+
+    return texto_final
