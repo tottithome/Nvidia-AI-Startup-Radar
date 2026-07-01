@@ -5,8 +5,9 @@ O grafo NÃO é linear — tem dois pontos de decisão (é o que o torna agênti
 
 1. Depois do scraper: se a coleta veio praticamente vazia (site SPA/JS ou URL não
    encontrada), desvia para 'insufficient_data' e encerra sem gastar LLM.
-2. Depois do classifier: startups Non-AI (nível 0) pulam o RAG e o recommender e
-   vão direto ao briefing — não há stack NVIDIA a recomendar.
+2. Depois do classifier, o Evidence Validator decide: se a evidência é fraca (muitos
+   "inconclusivo"), o grafo VOLTA ao scraper (CICLO/recoleta com mais páginas);
+   senão, Non-AI (0) vai direto ao briefing e os demais seguem para o RAG.
 
 O primeiro nó (search_planner) descobre a URL a partir do nome, quando ela não é
 informada. As decisões ficam em graph/routing.py. O estado (StartupState) vai sendo
@@ -19,13 +20,14 @@ from langgraph.graph import END, START, StateGraph
 
 from agents.briefing import briefing_node
 from agents.classifier import classifier_node
+from agents.evidence_validator import evidence_validator_node
 from agents.extractor import extractor_node
 from agents.github import github_node
 from agents.nvidia_rag import nvidia_rag_node
 from agents.recommender import recommender_node
 from agents.scraper import scraper_node
 from agents.search_planner import search_planner_node
-from graph.routing import route_after_classifier, route_after_scraper
+from graph.routing import route_after_scraper, route_after_validator
 from graph.state import StartupState
 
 
@@ -80,6 +82,7 @@ def build_graph():
     builder.add_node("extractor", extractor_node)
     builder.add_node("github", github_node)
     builder.add_node("classifier", classifier_node)
+    builder.add_node("evidence_validator", evidence_validator_node)
     builder.add_node("nvidia_rag", nvidia_rag_node)
     builder.add_node("recommender", recommender_node)
     builder.add_node("briefing", briefing_node)
@@ -98,12 +101,14 @@ def build_graph():
 
     builder.add_edge("extractor", "github")
     builder.add_edge("github", "classifier")
+    builder.add_edge("classifier", "evidence_validator")
 
-    # 2ª aresta condicional: Non-AI (0) → briefing direto; demais → caminho completo.
+    # 2ª aresta condicional + CICLO: evidência fraca → volta ao scraper (recoleta);
+    # Non-AI (0) → briefing direto; demais níveis → caminho completo (RAG).
     builder.add_conditional_edges(
-        "classifier",
-        route_after_classifier,
-        {"nvidia_rag": "nvidia_rag", "briefing": "briefing"},
+        "evidence_validator",
+        route_after_validator,
+        {"scraper": "scraper", "nvidia_rag": "nvidia_rag", "briefing": "briefing"},
     )
 
     builder.add_edge("nvidia_rag", "recommender")

@@ -30,6 +30,10 @@ class StartupState(TypedDict, total=False):
     level_name: str
     rationale: str
 
+    # --- controle do ciclo do Evidence Validator ---
+    retries: int       # quantas vezes já recoletamos (guard contra loop infinito)
+    revalidar: bool    # o validator pediu nova coleta?
+
     # --- preenchido pelo NVIDIA RAG Agent ---
     nvidia_context: list[dict]
 

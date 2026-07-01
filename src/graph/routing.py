@@ -23,15 +23,17 @@ def route_after_scraper(state: StartupState) -> str:
     return "extractor"
 
 
-def route_after_classifier(state: StartupState) -> str:
-    """Depois de classificar: Non-AI (nível 0) pula o RAG e o recommender.
+def route_after_validator(state: StartupState) -> str:
+    """Depois da validação de evidências. Três saídas:
 
-    IA ausente ou só cosmética — não há stack NVIDIA a recomendar, então vai
-    direto ao briefing. Qualquer outro nível (1 a 3) segue o caminho completo.
+    1. Evidência fraca (revalidar=True) → volta ao 'scraper' (ciclo/recoleta).
+    2. Non-AI (nível 0) → 'briefing' direto (não há stack NVIDIA a recomendar).
+    3. Demais níveis (1 a 3) → 'nvidia_rag' (caminho completo).
 
-    Aceita o nível como número (0) ou texto ("0"), pois o LLM pode devolver
-    qualquer um dos dois. Na dúvida (nível ausente/inesperado), caminho completo.
+    Aceita o nível como número (0) ou texto ("0"). Na dúvida, caminho completo.
     """
+    if state.get("revalidar"):
+        return "scraper"
     if str(state.get("level")) == "0":
         return "briefing"
     return "nvidia_rag"

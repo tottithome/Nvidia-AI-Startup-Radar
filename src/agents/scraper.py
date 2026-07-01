@@ -28,7 +28,10 @@ def scraper_node(state: StartupState) -> dict:
     limitada pela falta de conteúdo.
     """
     url = state["url"]
-    texto = collect_site_text(url)
+    # Na recoleta (ciclo do Evidence Validator, retries>0), busca MAIS páginas para
+    # tentar trazer evidência adicional que resolva os "inconclusivo".
+    max_pages = 10 if state.get("retries", 0) else 5
+    texto = collect_site_text(url, max_pages=max_pages)
 
     aviso = ""
     if len(texto) < MIN_CHARS_UTEIS:
