@@ -1,7 +1,6 @@
 """Recuperação: dada uma pergunta, busca os chunks mais relevantes no Qdrant."""
 
 from __future__ import annotations
-from urllib import response
 
 from qdrant_client import QdrantClient
 

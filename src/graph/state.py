@@ -16,15 +16,23 @@ class StartupState(TypedDict, total=False):
 
     # --- preenchido pelo Scraper ---
     raw_text: str
+    scrape_aviso: str  # aviso quando a coleta vem fraca (ex.: site SPA/JS)
 
     # --- preenchido pelo Extractor ---
     structured: dict
+
+    # --- preenchido pelo GitHub Agent (sinal "produz vs. consome") ---
+    github: dict
 
     # --- preenchido pelo Classifier ---
     checklist: list[dict]
     level: int
     level_name: str
     rationale: str
+
+    # --- controle do ciclo do Evidence Validator ---
+    retries: int       # quantas vezes já recoletamos (guard contra loop infinito)
+    revalidar: bool    # o validator pediu nova coleta?
 
     # --- preenchido pelo NVIDIA RAG Agent ---
     nvidia_context: list[dict]
