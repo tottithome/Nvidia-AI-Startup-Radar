@@ -48,14 +48,31 @@ def _build_query(state: StartupState) -> str:
     return " ".join(partes).strip()
 
 
+def _dedup_por_tecnologia(chunks: list[dict], top_n: int = 5) -> list[dict]:
+    """Mantém só o melhor chunk (maior score) de cada tecnologia.
+
+    Os chunks já vêm ordenados por score desc, então o primeiro de cada tecnologia
+    é o melhor. Evita o top-5 virar '3x AI Enterprise' e dá tecnologias distintas
+    ao recommender. Devolve as top_n tecnologias distintas.
+    """
+    melhor_por_tech: dict[str, dict] = {}
+    for chunk in chunks:
+        tech = chunk.get("technology")
+        if tech and tech not in melhor_por_tech:
+            melhor_por_tech[tech] = chunk
+    return list(melhor_por_tech.values())[:top_n]
+
+
 def nvidia_rag_node(state: StartupState) -> dict:
     """Monta a busca a partir do perfil e recupera os trechos NVIDIA relevantes.
 
-    Busca vetorial por cosseno (top-5). O reranker (rag/reranker.py) existe como
-    opção, mas está fora do fluxo: com a query por perfil técnico, o cosseno puro
-    ficou mais preciso e sem o custo do modelo de rerank.
+    Busca vetorial por cosseno num pool amplo (20) e depois faz dedup por tecnologia,
+    devolvendo até 5 tecnologias DISTINTAS. O reranker (rag/reranker.py) existe como
+    opção fora do fluxo (a query por perfil técnico deixou o cosseno preciso o
+    bastante).
     """
     query = _build_query(state) or state.get("startup_name", "")
     client = get_client()
-    chunks = search(client, query, limit=5)
+    candidates = search(client, query, limit=20)
+    chunks = _dedup_por_tecnologia(candidates, top_n=5)
     return {"nvidia_context": chunks}
