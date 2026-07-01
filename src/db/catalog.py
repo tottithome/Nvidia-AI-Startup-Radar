@@ -20,6 +20,25 @@ SEED_STARTUPS: list[tuple[str, str]] = [
     ("Zenvia", "https://www.zenvia.com/"),
     ("Portal Telemedicina", "https://portaltelemedicina.com.br/"),
     ("Blip", "https://www.blip.ai/"),
+    # --- expansão da base (URLs verificadas por coleta) ---
+    ("Kunumi", "https://kunumi.com"),
+    ("ClearSale", "https://www.clear.sale"),
+    ("Neurotech", "https://www.neurotech.com.br"),
+    ("Idwall", "https://idwall.co"),
+    ("Datarisk", "https://www.datarisk.io"),
+    ("Birdie", "https://birdie.ai"),
+    ("Huggy", "https://www.huggy.io"),
+    ("Weni", "https://weni.ai"),
+    ("Aquarela", "https://aquare.la"),
+    ("Meetime", "https://www.meetime.com.br"),
+    ("CI&T", "https://ciandt.com"),
+    ("Pipefy", "https://www.pipefy.com"),
+    ("Cortex Intelligence", "https://www.cortex-intelligence.com"),
+    ("Nubank", "https://nubank.com.br"),
+    ("QuintoAndar", "https://www.quintoandar.com.br"),
+    ("Memed", "https://memed.com.br"),
+    ("Robbu", "https://www.robbu.global"),
+    ("Zup", "https://www.zup.com.br"),
 ]
 
 

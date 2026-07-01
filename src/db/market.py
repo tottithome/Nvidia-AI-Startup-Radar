@@ -34,7 +34,8 @@ def market_radar() -> dict:
     techs: Counter = Counter()
     for a in registros:
         dist[_NIVEL_NOME.get(a.level, "Não classificado")] += 1
-        for t in a.technologies or []:
+        # getattr defensivo: se por algum motivo a linha não tiver o campo, não quebra.
+        for t in getattr(a, "technologies", None) or []:
             techs[t] += 1
 
     prioridade = sorted(
